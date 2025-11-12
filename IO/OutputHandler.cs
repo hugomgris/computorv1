@@ -15,6 +15,16 @@ namespace Computorv1.IO
 				return;
 			}
 
+			DisplayReducedForm(result.ReducedForm);
+			
+			Console.WriteLine($"Polynomial degree: {result.Degree}");
+
+			if (result.Type == SolutionType.QuadraticRealSolutions || 
+				result.Type == SolutionType.QuadraticComplexSolutions)
+			{
+				Console.WriteLine($"Discriminant: {result.Discriminant}");
+			}
+
 			switch (result.Type)
 			{
 				case SolutionType.NoSolution:
@@ -64,6 +74,73 @@ namespace Computorv1.IO
 				case SolutionType.UnsolvableDegree:
 					Console.WriteLine("The polynomial degree is strictly greater than 2, I can't solve.");
 					break;
+			}
+		}
+
+		private void DisplayReducedForm(Polynomial polynomial)
+		{
+			Console.Write("Reduced form: ");
+			
+			var terms = polynomial.GetTerms().OrderBy(t => t.Key).ToList();
+			var termStrings = new List<string>();
+			
+			foreach (var term in terms)
+			{
+				if (CustomMath.ft_Abs(term.Value) < 1e-10)
+					continue;
+				
+				string sign = term.Value >= 0 ? "+" : "-";
+				double absCoeff = CustomMath.ft_Abs(term.Value);
+				
+				string coeffStr;
+				if (CustomMath.ft_Abs(absCoeff - 1.0) < 1e-10 && term.Key > 0)
+				{
+					coeffStr = "";
+				}
+				else
+				{
+					var fraction = ConvertToFraction(absCoeff);
+					if (fraction.HasValue && IsInterestingFraction(fraction.Value.numerator, fraction.Value.denominator))
+					{
+						if (fraction.Value.denominator == 1)
+							coeffStr = fraction.Value.numerator.ToString();
+						else
+							coeffStr = $"{fraction.Value.numerator}/{fraction.Value.denominator}";
+					}
+					else
+					{
+						coeffStr = absCoeff.ToString();
+					}
+				}
+				
+				string termStr;
+				if (term.Key == 0)
+				{
+					termStr = coeffStr;
+				}
+				else
+				{
+					string varPart = term.Key == 1 ? "X" : $"X^{term.Key}";
+					termStr = string.IsNullOrEmpty(coeffStr) ? varPart : $"{coeffStr} * {varPart}";
+				}
+				
+				if (termStrings.Count == 0)
+				{
+					termStrings.Add(term.Value >= 0 ? termStr : $"-{termStr}");
+				}
+				else
+				{
+					termStrings.Add($" {sign} {termStr}");
+				}
+			}
+			
+			if (termStrings.Count == 0)
+			{
+				Console.WriteLine("0 = 0");
+			}
+			else
+			{
+				Console.WriteLine(string.Join("", termStrings) + " = 0");
 			}
 		}
 
@@ -118,7 +195,7 @@ namespace Computorv1.IO
 
 			for (int denominator = 1; denominator <= maxDenominator; denominator++)
 			{
-				int numerator = ft_Round(value * denominator);
+				int numerator = CustomMath.ft_Round(value * denominator);
 				
 				if (CustomMath.ft_Abs(value - (double)numerator / denominator) < tolerance)
 				{
