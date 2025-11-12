@@ -13,10 +13,12 @@
 				var inputHandler = new InputHandler();
 				var outputHandler = new OutputHandler();
 
-				string equation;
+				string equation = "";
+				bool showGraph = false;
 
 				PrintHeader();
 
+				// Parse command line arguments
 				if (args.Length == 0)
 				{
 					// Read from STDIN
@@ -25,31 +27,78 @@
 				}
 				else if (args.Length == 1)
 				{
-					var validation = inputHandler.ValidateInput(args[0]);
-					if (validation.IsValid)
+					// Check for graph flag or equation
+					if (args[0] == "--graph" || args[0] == "-g")
 					{
-						equation = args[0];
+						Console.WriteLine("Enter equation:");
+						equation = Console.ReadLine() ?? string.Empty;
+						showGraph = true;
 					}
 					else
 					{
-						Console.WriteLine($"Error: {validation.ErrorMessage}");
+						var validation = inputHandler.ValidateInput(args[0]);
+						if (validation.IsValid)
+						{
+							equation = args[0];
+						}
+						else
+						{
+							Console.WriteLine($"Error: {validation.ErrorMessage}");
+							return;
+						}
+					}
+				}
+				else if (args.Length == 2)
+				{
+					// Check for equation + graph flag
+					if (args[0] == "--graph" || args[0] == "-g")
+					{
+						var validation = inputHandler.ValidateInput(args[1]);
+						if (validation.IsValid)
+						{
+							equation = args[1];
+							showGraph = true;
+						}
+						else
+						{
+							Console.WriteLine($"Error: {validation.ErrorMessage}");
+							return;
+						}
+					}
+					else if (args[1] == "--graph" || args[1] == "-g")
+					{
+						var validation = inputHandler.ValidateInput(args[0]);
+						if (validation.IsValid)
+						{
+							equation = args[0];
+							showGraph = true;
+						}
+						else
+						{
+							Console.WriteLine($"Error: {validation.ErrorMessage}");
+							return;
+						}
+					}
+					else
+					{
+						Console.WriteLine("Usage: ./computor [--graph/-g] [equation] or ./computor (for STDIN input)");
 						return;
 					}
 				}
 				else
 				{
-					Console.WriteLine("Usage: ./computor [equation] or ./computor (for STDIN input)");
+					Console.WriteLine("Usage: ./computor [--graph/-g] [equation] or ./computor (for STDIN input)");
 					return;
 				}
 
 				if (string.IsNullOrWhiteSpace(equation))
 				{
-					Console.WriteLine("Noe equation provided.");
+					Console.WriteLine("No equation provided.");
 					return;
 				}
 
 				var result = solver.Solve(equation);
-				outputHandler.DisplayResult(result);
+				outputHandler.DisplayResult(result, showGraph);
 			}
 			catch (Exception ex)
 			{

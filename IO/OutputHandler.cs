@@ -7,7 +7,7 @@ namespace Computorv1.IO
 	/// </summary>
 	public class OutputHandler
 	{
-		public void DisplayResult(SolutionResult result)
+		public void DisplayResult(SolutionResult result, bool showGraph = false)
 		{
 			if (!string.IsNullOrEmpty(result.ErrorMessage))
 			{
@@ -77,6 +77,42 @@ namespace Computorv1.IO
 				case SolutionType.UnsolvableDegree:
 					Console.WriteLine("The polynomial degree is strictly greater than 2, I can't solve.");
 					break;
+			}
+
+			// Display graphical representation for polynomial degrees 1 and 2
+			if (showGraph && result.Degree >= 1 && result.Degree <= 2 && result.Type != SolutionType.UnsolvableDegree)
+			{
+				DisplayGraphicalRepresentation(result);
+			}
+		}
+
+		private void DisplayGraphicalRepresentation(SolutionResult result)
+		{
+			// Find approximate roots numerically
+			var approximateRoots = CustomMath.FindApproximateRoots(result.ReducedForm);
+			
+			if (approximateRoots.Count > 0)
+			{
+				Console.WriteLine("\nNumerical root verification:");
+				foreach (var root in approximateRoots)
+				{
+					double value = CustomMath.EvaluatePolynomial(result.ReducedForm, root);
+					Console.WriteLine($"f({FormatSolution(root)}) ≈ {FormatSolution(value)}");
+				}
+			}
+
+			// Draw the graph
+			CustomMath.DrawPolynomialGraph(result.ReducedForm);
+			
+			// Show the analytical solutions on the graph
+			if (result.RealSolutions.Count > 0)
+			{
+				Console.WriteLine("\nAnalytical solutions marked with coordinates:");
+				foreach (var solution in result.RealSolutions)
+				{
+					double yValue = CustomMath.EvaluatePolynomial(result.ReducedForm, solution);
+					Console.WriteLine($"Root: ({FormatSolution(solution)}, {FormatSolution(yValue)})");
+				}
 			}
 		}
 
