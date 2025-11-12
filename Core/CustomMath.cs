@@ -31,5 +31,10 @@ namespace Computorv1.Core
 			
 			return guess;
 		}
+
+		private int ft_Round(double value)
+		{
+			return (int)(value + 0.5);
+		}
 	}
 }
