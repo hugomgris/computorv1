@@ -8,7 +8,7 @@
     "net8.0": []
   },
   "packageFolders": {
-    "/goinfre/hmunoz-g/nuget": {}
+    "/home/hmunoz-g/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
@@ -16,11 +16,11 @@
       "projectUniqueName": "/goinfre/hmunoz-g/computorv1/computorv1.csproj",
       "projectName": "computorv1",
       "projectPath": "/goinfre/hmunoz-g/computorv1/computorv1.csproj",
-      "packagesPath": "/goinfre/hmunoz-g/nuget",
+      "packagesPath": "/home/hmunoz-g/.nuget/packages/",
       "outputPath": "/goinfre/hmunoz-g/computorv1/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/goinfre/hmunoz-g/dotnet-templates/.nuget/NuGet/NuGet.Config"
+        "/home/hmunoz-g/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"

@@ -26,3 +26,4 @@
 /goinfre/hmunoz-g/computorv1/obj/Debug/net8.0/computorv1.pdb
 /goinfre/hmunoz-g/computorv1/obj/Debug/net8.0/computorv1.genruntimeconfig.cache
 /goinfre/hmunoz-g/computorv1/obj/Debug/net8.0/ref/computorv1.dll
+/goinfre/hmunoz-g/computorv1/obj/Debug/net8.0/computorv1.sourcelink.json
