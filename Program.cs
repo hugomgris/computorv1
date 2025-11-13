@@ -20,7 +20,7 @@
 
 				if (args.Length == 0)
 				{
-					Console.WriteLine("Enter equation:");
+					Console.Write("Enter equation:\n> ");
 					equation = Console.ReadLine() ?? string.Empty;
 				}
 				else if (args.Length == 1)

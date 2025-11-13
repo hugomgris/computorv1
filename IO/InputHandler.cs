@@ -9,7 +9,7 @@ namespace Computorv1.IO
 		{
 			string equation;
 			Console.WriteLine();
-			Console.WriteLine("Enter equation:");
+			Console.Write("Enter equation:\n> ");
 			equation = Console.ReadLine() ?? string.Empty;
 			return equation;
 		}
