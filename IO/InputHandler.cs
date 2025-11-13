@@ -5,6 +5,15 @@ namespace Computorv1.IO
 	/// </summary>
 	public class InputHandler
 	{
+		public string retakeRawInput(string input)
+		{
+			string equation;
+			Console.WriteLine();
+			Console.WriteLine("Enter equation:");
+			equation = Console.ReadLine() ?? string.Empty;
+			return equation;
+		}
+		
 		public string ProcessInput(string input)
 		{
 			return input.Trim();

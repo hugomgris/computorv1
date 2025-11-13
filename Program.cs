@@ -18,16 +18,13 @@
 
 				PrintHeader();
 
-				// Parse command line arguments
 				if (args.Length == 0)
 				{
-					// Read from STDIN
 					Console.WriteLine("Enter equation:");
 					equation = Console.ReadLine() ?? string.Empty;
 				}
 				else if (args.Length == 1)
 				{
-					// Check for graph flag or equation
 					if (args[0] == "--graph" || args[0] == "-g")
 					{
 						Console.WriteLine("Enter equation:");
@@ -38,9 +35,7 @@
 					{
 						var validation = inputHandler.ValidateInput(args[0]);
 						if (validation.IsValid)
-						{
 							equation = args[0];
-						}
 						else
 						{
 							Console.WriteLine($"Error: {validation.ErrorMessage}");
@@ -50,7 +45,6 @@
 				}
 				else if (args.Length == 2)
 				{
-					// Check for equation + graph flag
 					if (args[0] == "--graph" || args[0] == "-g")
 					{
 						var validation = inputHandler.ValidateInput(args[1]);
@@ -97,8 +91,31 @@
 					return;
 				}
 
-				var result = solver.Solve(equation);
-				outputHandler.DisplayResult(result, showGraph);
+				while (!string.IsNullOrWhiteSpace(equation))
+				{	
+					if (equation.ToLower() == "exit")
+					{
+						Console.WriteLine("BYE BYE!!");
+						return;
+					}
+
+					if (equation.ToLower() == "graph")
+					{
+						showGraph = !showGraph;
+						if (showGraph)
+							Console.WriteLine("Graphs ON");
+						else
+							Console.WriteLine("Graphs OFF");
+						equation = inputHandler.retakeRawInput(equation);
+					}
+					else
+					{
+						var result = solver.Solve(equation);
+						outputHandler.DisplayResult(result, showGraph);
+
+						equation = inputHandler.retakeRawInput(equation);
+					}
+				}
 			}
 			catch (Exception ex)
 			{
