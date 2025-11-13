@@ -15,6 +15,8 @@ PROJECT     := computorv1
 # -=-=-=-=-    DOTNET SETTINGS -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
 
 DOTNET      = dotnet
+BUILD_FLAGS = --configuration Release --verbosity quiet --no-restore
+RUN_FLAGS   = --no-build --configuration Release
 
 # -=-=-=-=-    PATH -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
 
@@ -32,41 +34,65 @@ SOURCES     = Core/CustomMath.cs \
 				Core/SolutionResult.cs \
 				Core/Term.cs \
 				IO/InputHandler.cs \
-				IO/OutputHandler.cs
+				IO/OutputHandler.cs \
+				Program.cs
 EXECUTABLE  = $(BUILD_DIR)/Release/net8.0/$(PROJECT)
+DLL_FILE    = $(BUILD_DIR)/Release/net8.0/$(PROJECT).dll
+BUILD_MARKER = $(BUILD_DIR)/.build_marker
+
+DEPS        = $(CSPROJ) $(SOURCES) Makefile
 
 # -=-=-=-=-    TARGETS -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
 
 all: $(NAME)
 
-$(NAME): $(SOURCES) $(CSPROJ)
-	@echo "$(YELLOW)Building $(PROJECT)...$(DEF_COLOR)"
+$(BUILD_MARKER): $(DEPS)
+	@mkdir -p $(BUILD_DIR)
+	@$(DOTNET) restore --verbosity quiet
 	@$(DOTNET) build $(BUILD_FLAGS)
+	@touch $(BUILD_MARKER)
+	@echo "$(GREEN)Build completed$(DEF_COLOR)"
+
+$(NAME): $(BUILD_MARKER)
+	@if [ -f "$(DLL_FILE)" ]; then \
+		if [ ! -L "$(NAME)" ] || [ ! -e "$(NAME)" ] || [ "$(BUILD_MARKER)" -nt "$(NAME)" ]; then \
+			echo "$(CYAN)Creating executable link...$(DEF_COLOR)"; \
+			echo "#!/bin/bash" > $(NAME); \
+			echo "cd \"\$$(dirname \"\$$0\")\"" >> $(NAME); \
+			echo "exec $(DOTNET) \"$(DLL_FILE)\" \"\$$@\"" >> $(NAME); \
+			chmod +x $(NAME); \
+		fi; \
+	else \
+		echo "$(RED)Build failed - DLL not found$(DEF_COLOR)"; \
+		exit 1; \
+	fi
 	@echo "$(RED)Poly-facetic, Poly-carpian, Poly-nomial$(DEF_COLOR)"
 
-build : $(NAME)
+check-build: $(BUILD_MARKER)
+	@echo "$(GREEN)Build is up to date$(DEF_COLOR)"
 
-run: $(NAME)
+build: $(NAME)
+
+run: $(BUILD_MARKER)
 	@echo "$(CYAN)Running $(NAME)...$(DEF_COLOR)"
 	@$(DOTNET) run $(RUN_FLAGS)
 
 clean:
 	@echo "$(YELLOW)Cleaning build artifacts...$(DEF_COLOR)"
 	@$(DOTNET) clean --verbosity quiet 2>/dev/null || true
-	@$(RM) $(BUILD_DIR) $(OBJ_DIR)
+	@$(RM) $(BUILD_DIR) $(OBJ_DIR) $(BUILD_MARKER)
 	@echo "$(RED)Cleaned object files and build artifacts$(DEF_COLOR)"
 
 fclean: clean
-	@$(RM) $(NAME) $(PUBLISH_DIR)
+	@$(RM) $(NAME)
 	@echo "$(RED)Cleaned all binaries$(DEF_COLOR)"
 
 re: fclean all
 
-info:
-	@echo "$(BLUE)Project Information:$(DEF_COLOR)"
-	@echo "  Name: $(NAME)"
-	@echo "  Project: $(PROJECT)"
-	@echo "  .NET Version: $$($(DOTNET) --version 2>/dev/null || echo 'Not installed')"
-	@echo "  Sources: $$(echo '$(SOURCES)' | wc -w) files"
+.PHONY: all build run test publish restore clean fclean re force dry-run check-build info help
 
-.PHONY: all build run test publish restore clean fclean re format check info help
+# -=-=-=-=-    DEPENDENCY RULES -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
+
+.PRECIOUS: $(BUILD_MARKER)
+
+$(BUILD_MARKER): $(SOURCES) $(CSPROJ) Makefile

@@ -66,7 +66,6 @@ namespace Computorv1.Core
 			if (string.IsNullOrWhiteSpace(equation))
 				throw new ArgumentException("Empty equation provided");
 
-			// Check for invalid characters
 			foreach (char c in equation)
 			{
 				if (!ValidCharacters.Contains(c))
@@ -75,15 +74,12 @@ namespace Computorv1.Core
 				}
 			}
 
-			// Check for multiple equals signs
 			int equalsCount = equation.Count(c => c == '=');
 			if (equalsCount == 0)
 				throw new ArgumentException("Missing equals sign (=) in equation");
 			if (equalsCount > 1)
 				throw new ArgumentException("Too many equals signs - equation must have exactly one '='");
 
-			// Check for invalid variable names (only X/x allowed)
-			// Look for letters that are not X or x
 			var invalidVariables = System.Text.RegularExpressions.Regex.Matches(equation, @"[A-WYZa-wyz]");
 			if (invalidVariables.Count > 0)
 			{
@@ -179,14 +175,11 @@ namespace Computorv1.Core
 		{
 			var polynomial = new Polynomial();
 			
-			// Normalize: convert to uppercase, clean up spaces
 			string normalizedSide = side.Replace('x', 'X').Replace(" ", "");
-			
-			// Add leading + if no sign
+
 			if (!normalizedSide.StartsWith("+") && !normalizedSide.StartsWith("-"))
 				normalizedSide = "+" + normalizedSide;
-			
-			// Split by + and - while keeping the operators
+
 			var parts = SplitPreservingOperators(normalizedSide);
 			
 			foreach (string part in parts)
@@ -214,7 +207,6 @@ namespace Computorv1.Core
 				}
 			}
 			
-			// Add the last part
 			if (start < expression.Length)
 				parts.Add(expression.Substring(start));
 			
@@ -223,10 +215,8 @@ namespace Computorv1.Core
 		
 		private Term ParseTerm(string term)
 		{
-			// Clean up the term
 			term = term.Trim();
-			
-			// Determine sign
+
 			double sign = 1;
 			if (term.StartsWith("+"))
 			{
@@ -237,17 +227,14 @@ namespace Computorv1.Core
 				sign = -1;
 				term = term.Substring(1);
 			}
-			
-			// Check what type of term this is
+
 			if (!term.Contains("X"))
 			{
-				// Constant term
 				double coeff = string.IsNullOrEmpty(term) ? 1 : double.Parse(term);
 				return new Term(sign * coeff, 0);
 			}
 			else if (term.Contains("X^"))
 			{
-				// X with explicit power
 				var parts = term.Split('^');
 				if (parts.Length != 2)
 					throw new ArgumentException($"Invalid power format in term: {term}");
@@ -255,7 +242,6 @@ namespace Computorv1.Core
 				string coeffPart = parts[0];
 				string powerPart = parts[1];
 				
-				// Remove X from coefficient part
 				coeffPart = coeffPart.Replace("X", "").Replace("*", "");
 				
 				double coeff = string.IsNullOrEmpty(coeffPart) ? 1 : double.Parse(coeffPart);
@@ -265,7 +251,6 @@ namespace Computorv1.Core
 			}
 			else
 			{
-				// X with implicit power 1
 				string coeffPart = term.Replace("X", "").Replace("*", "");
 				double coeff = string.IsNullOrEmpty(coeffPart) ? 1 : double.Parse(coeffPart);
 				
@@ -278,7 +263,6 @@ namespace Computorv1.Core
 			string remaining = side;
 			bool foundAnyMatch = false;
 			
-			// Process patterns in order of specificity to avoid conflicts
 			foreach (string pattern in StandardPatterns)
 			{
 				var matches = Regex.Matches(remaining, pattern);
@@ -290,7 +274,6 @@ namespace Computorv1.Core
 						foundAnyMatch = true;
 						var term = ExtractStandardTerm(match, pattern);
 						polynomial.AddTerm(term.Power, term.Coefficient);
-						// Remove the matched text to prevent double-matching
 						int index = remaining.IndexOf(match.Value);
 						if (index >= 0)
 						{
@@ -304,7 +287,6 @@ namespace Computorv1.Core
 				}
 			}
 
-			// Check if we consumed the entire input (allowing for +/- signs)
 			remaining = remaining.Replace("+", "").Replace("-", "").Replace(" ", "");
 			bool consumedAll = string.IsNullOrWhiteSpace(remaining);
 			
@@ -320,11 +302,9 @@ namespace Computorv1.Core
 		{
 			var polynomial = new Polynomial();
 			
-			// Normalize the input (convert to uppercase X)
 			side = NormalizeFreeFormInput(side);
 			string remaining = side;
 			
-			// Process patterns in order of specificity
 			foreach (string pattern in FreeFormPatterns)
 			{
 				var matches = Regex.Matches(remaining, pattern);
@@ -335,7 +315,6 @@ namespace Computorv1.Core
 					{
 						var term = ExtractFreeFormTerm(match, pattern);
 						polynomial.AddTerm(term.Power, term.Coefficient);
-						// Remove the matched text to prevent double-matching
 						int index = remaining.IndexOf(match.Value);
 						if (index >= 0)
 						{
@@ -349,7 +328,6 @@ namespace Computorv1.Core
 				}
 			}
 			
-			// Check for unparsed content
 			string remainingContent = remaining.Replace(" ", "").Replace("+", "").Replace("-", "");
 			if (!string.IsNullOrWhiteSpace(remainingContent))
 			{
